@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "ABC Areal Semi Mono";
+  src: url("$lib/assets/fonts/ABCArealSemiMonoVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Areal Semi Mono";
+  src: url("$lib/assets/fonts/ABCArealSemiMono-RegularItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Areal Semi Mono";
+  src: url("$lib/assets/fonts/ABCArealSemiMono-MediumItalic.woff2") format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABC Areal Semi Mono";
+  src: url("$lib/assets/fonts/ABCArealSemiMono-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "ABC Areal Semi Mono", ui-monospace, monospace;
+  --font-serif: "Times New Roman", Times, serif;
+}
+
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  --stroke: 2px;
+  --pad: 0.75rem;
+  font-size: clamp(13px, 0.45vw + 9.5px, 18px);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: white;
+  color: black;
+  font-weight: 600;
+}
+
+.font-serif,
+.logo {
+  position: fixed;
+  top: var(--pad);
+  left: var(--pad);
+  z-index: 3000;
+  width: 6.5rem;
+}
+
+::selection {
+  background: black;
+  color: white;
+}
+.pill {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: #dddddd;
+  font-family: var(--font-sans);
+  font-size: var(--pill-size, 0.72rem);
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+a.pill:hover,
+a.pill[aria-current="page"] {
+  background: black;
+  border-color: black;
+  color: white;
+}
+
+.reading {
+  container-type: inline-size;
+}
+
+/* sized on the children: container units on the container itself would ignore its own width */
+.reading > * {
+  --pill-size: 0.6em;
+  font-size: clamp(0.85rem, 4.2cqi, 1.2rem);
+}
+
+.reading-title {
+  margin-bottom: var(--pad);
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 11cqi, 3.4rem);
+  font-weight: 400;
+  line-height: 0.98;
+}
+
+.content {
+  max-width: 40em;
+  line-height: 1.375;
+}
+
+.link,
+.content a,
+.content a * {
+  background: none !important;
+  color: #0000ee !important;
+  font: inherit !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 0.2em;
+}
+
+.content p,
+.content ul,
+.content ol,
+.content .elementor-widget-text-editor {
+  margin-bottom: 0.75em;
+}
+
+.content :is(h1, h2, h3, h4, h5, h6) {
+  margin: 1.25em 0 0.25em;
+  font-size: 1em;
+  font-weight: 700;
+  line-height: inherit;
+}
+
+.content ul {
+  padding-left: 1.2em;
+  list-style: disc;
+}
+
+.content ol {
+  padding-left: 1.6em;
+  list-style: decimal;
+}
+
+.content :is(img, iframe, video) {
+  max-width: 100%;
+  height: auto;
+}
+
+.content iframe {
+  aspect-ratio: 16 / 9;
+}
