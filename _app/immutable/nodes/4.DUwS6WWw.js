@@ -1,0 +1,1 @@
+import{$ as e,H as t,I as n,ct as r,et as i,m as a}from"../chunks/CvDIP4n0.js";import"../chunks/xihTtKlq.js";var o=r({load:()=>s}),s=async({parent:e})=>({page:(await e()).pages.about});function c(r,o){i(o,!0),a(`1dkehce`,e=>{n(()=>{t.title=`${o.data.page.title??``} · MeTe`})}),e()}export{c as component,o as universal};

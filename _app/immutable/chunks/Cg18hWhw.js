@@ -1,0 +1,1 @@
+var e=`https://mete.fyi/wp-json/wp/v2`,t=`https://mete.fyi/wp-content/uploads/2023/02/Mete_Logo_D_2024.gif`,n=`mete`,r=[{bg:`white`,fg:`black`,outline:!1}];export{e as i,t as n,r,n as t};

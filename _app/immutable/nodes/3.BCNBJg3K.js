@@ -1,0 +1,1 @@
+import{D as e,H as t,L as n,T as r,m as i}from"../chunks/CvDIP4n0.js";import"../chunks/xihTtKlq.js";var a=e(`<h1 class="sr-only">MeTe</h1>`);function o(e){var o=a();i(`1qby7pg`,e=>{n(()=>{t.title=`MeTe`})}),r(e,o)}export{o as component};
