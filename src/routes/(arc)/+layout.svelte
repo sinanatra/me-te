@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { randomLook } from '$lib/arc';
 	import ArcCarousel from '$lib/components/ArcCarousel.svelte';
 	import CategoryNav from '$lib/components/CategoryNav.svelte';
 	import PageDetail from '$lib/components/PageDetail.svelte';
@@ -10,6 +11,8 @@
 	import type { Page, Project } from '$lib/wp';
 
 	let { data, children } = $props();
+
+	const look = randomLook();
 
 	const slug = $derived(page.params.slug ?? null);
 	const sitePage = $derived((page.data.page as Page | undefined) ?? null);
@@ -48,8 +51,10 @@
 
 <ArcCarousel
 	{projects}
+	options={look}
 	current={slug}
 	{open}
+	narrow={!!shownProject}
 	onnavigate={(p) => goto(resolve(`/projects/${p.slug}`), { replaceState: true, noScroll: true, keepFocus: true })}
 	onclose={close}
 >

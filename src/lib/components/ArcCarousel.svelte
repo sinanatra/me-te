@@ -14,6 +14,7 @@
     open: isOpen = !!current,
     options = ARC,
     links = true,
+    narrow = false,
     onnavigate,
     onclose,
     children,
@@ -23,6 +24,7 @@
     open?: boolean;
     options?: ArcOptions;
     links?: boolean;
+    narrow?: boolean;
     onnavigate?: (project: Project) => void;
     onclose?: () => void;
     children?: Snippet;
@@ -253,6 +255,7 @@
 <div
   class="curtains flex h-dvh w-full justify-center overflow-hidden bg-[#dddddd]"
   class:open={isOpen}
+  class:narrow
   class:resizing={detail.resizing}
   style="--item-width: {itemWidth}px;{detail.width
     ? `--open-width: ${detail.width}px`
@@ -383,6 +386,10 @@
   .curtains {
     --open-width: min(52vw, 960px);
     --ease: 900ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .curtains.narrow {
+    --open-width: 25vw;
   }
 
   .stage-center {

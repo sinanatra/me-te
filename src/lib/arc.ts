@@ -48,7 +48,48 @@ export const ARC: ArcOptions = {
 	hinge: true
 };
 
+const scattered: Partial<ArcOptions> = {
+	sweep: 85,
+	radius: 0.5,
+	centerY: 0.45,
+	spiral: 0.52,
+	step: 0.2,
+	size: 0.98,
+	frontTurn: 0,
+	endTurn: 0,
+	turnEase: 3,
+	wave: 0.185,
+	waves: 1.85,
+	vary: false,
+	scatter: 0.35,
+	tilt: 14,
+	hinge: false
+};
+
+export const LOOKS: Partial<ArcOptions>[] = [
+	{ ...scattered, curve: 'line' },
+	scattered,
+	{ endTurn: 0, turnEase: 3, wave: 0, vary: false, scatter: 0.35, tilt: 14, hinge: false },
+	{
+		curve: 'line',
+		startY: 0.7,
+		endY: 0.27,
+		step: 0.25,
+		farScale: 0.39,
+		size: 1.27,
+		frontTurn: 0,
+		endTurn: 0,
+		turnEase: 3,
+		wave: 0,
+		waves: 0.85,
+		scatter: 0.69
+	}
+];
+
+export const randomLook = (): ArcOptions => ({ ...ARC, ...LOOKS[Math.floor(Math.random() * LOOKS.length)] });
+
 export const PRESETS: Record<string, Partial<ArcOptions>> = {
+	...Object.fromEntries(LOOKS.map((look, i) => [`Look ${i + 1}`, look])),
 	Ring: {},
 	Spiral: { sweep: 470, spiral: 0.85, step: 0.12, farScale: 0.05, endTurn: 40, wave: 0, vary: false, hinge: false },
 	Road: { curve: 'line', startY: 0.7, endY: 0.06, wave: 0.18, waves: 1.5 },
