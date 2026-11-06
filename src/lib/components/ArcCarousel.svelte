@@ -370,7 +370,7 @@
                 {/each}
               </ul>
               {#if project.detail}
-                <span class="more" aria-hidden="true">Open →</span>
+                <span class="more" aria-hidden="true">More info</span>
               {/if}
             </div>
           {/if}
@@ -541,6 +541,7 @@
     flex-wrap: wrap;
     gap: 0.4em 1.4em;
   }
+
 
   .more {
     flex: none;
