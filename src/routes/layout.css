@@ -76,9 +76,8 @@ body {
   background: #dddddd;
   font-family: var(--font-sans);
   font-size: var(--pill-size, 0.72rem);
+  /* font-weight: 400; */
   line-height: 1.4;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -95,14 +94,17 @@ a.pill[aria-current="page"] {
 
 /* sized on the children: container units on the container itself would ignore its own width */
 .reading > * {
-  --pill-size: 0.6em;
+  --pill-size: 0.75em;
+  font-family: var(--font-serif);
+  font-weight: 400;
   font-size: clamp(0.85rem, 4.2cqi, 1.2rem);
 }
 
 .reading-title {
-  margin-bottom: var(--pad);
-  font-family: var(--font-serif);
+  margin-bottom: 0.25em;
+  font-family: var(--font-sans);
   font-size: clamp(1.6rem, 11cqi, 3.4rem);
+  font-style: italic;
   font-weight: 400;
   line-height: 0.98;
 }
@@ -133,7 +135,7 @@ a.pill[aria-current="page"] {
 .content :is(h1, h2, h3, h4, h5, h6) {
   margin: 1.25em 0 0.25em;
   font-size: 1em;
-  font-weight: 700;
+  /* font-weight: 700; */
   line-height: inherit;
 }
 

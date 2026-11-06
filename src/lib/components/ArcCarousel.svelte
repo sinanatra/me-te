@@ -46,7 +46,10 @@
     const vary = (spread: number) =>
       o.vary ? 1 + (Math.random() * 2 - 1) * spread : 1;
     const sign = o.vary && Math.random() < 0.5 ? -1 : 1;
-    return { amplitude: o.wave * vary(0.33) * sign, waves: o.waves * vary(0.28) };
+    return {
+      amplitude: o.wave * vary(0.33) * sign,
+      waves: o.waves * vary(0.28),
+    };
   }
 
   const road = new Spring(makeRoad(), { stiffness: 0.04, damping: 0.8 });
@@ -120,7 +123,9 @@
   );
 
   function recede(t: number) {
-    return t >= 0 ? Math.min(1, (1 - Math.exp(-shrink * step * t)) / shrink) : 0;
+    return t >= 0
+      ? Math.min(1, (1 - Math.exp(-shrink * step * t)) / shrink)
+      : 0;
   }
 
   const boxRatio = $derived(2 * half <= 640 ? 3 / 4 : 4 / 3);
@@ -389,7 +394,7 @@
   }
 
   .curtains.narrow {
-    --open-width: 25vw;
+    --open-width: min(52vw, 960px);
   }
 
   .stage-center {
@@ -463,7 +468,8 @@
   .title {
     display: -webkit-box;
     overflow: hidden;
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
+    font-style: italic;
     font-weight: 400;
     flex: none;
     margin-top: -0.12em;
@@ -488,6 +494,8 @@
   }
 
   .text {
+    font-family: var(--font-serif);
+    font-weight: 400;
     display: -webkit-box;
     max-width: 34em;
     margin-top: 3cqi;
