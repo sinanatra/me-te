@@ -2,36 +2,35 @@
 
 @font-face {
   font-family: "ABC Areal Semi Mono";
-  src: url("$lib/assets/fonts/ABCArealSemiMonoVariable.woff2") format("woff2");
-  font-weight: 100 900;
+  src: url("/ABCArealSemiMonoVariable.ttf") format("truetype");
+  font-weight: 100 400;
   font-style: normal;
   font-display: swap;
 }
+
 @font-face {
-  font-family: "ABC Areal Semi Mono";
-  src: url("$lib/assets/fonts/ABCArealSemiMono-RegularItalic.woff2") format("woff2");
+  font-family: "Bespoke Serif";
+  src:
+    url("/BespokeSerif-Regular.woff2") format("woff2"),
+    url("/BespokeSerif-Regular.woff") format("woff");
   font-weight: 400;
-  font-style: italic;
+  font-style: normal;
   font-display: swap;
 }
+
 @font-face {
-  font-family: "ABC Areal Semi Mono";
-  src: url("$lib/assets/fonts/ABCArealSemiMono-MediumItalic.woff2") format("woff2");
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "ABC Areal Semi Mono";
-  src: url("$lib/assets/fonts/ABCArealSemiMono-BoldItalic.woff2") format("woff2");
-  font-weight: 700;
+  font-family: "Bespoke Serif";
+  src:
+    url("/BespokeSerif-Italic.woff2") format("woff2"),
+    url("/BespokeSerif-Italic.woff") format("woff");
+  font-weight: 400;
   font-style: italic;
   font-display: swap;
 }
 
 @theme {
   --font-sans: "ABC Areal Semi Mono", ui-monospace, monospace;
-  --font-serif: "Times New Roman", Times, serif;
+  --font-serif: "Bespoke Serif", "Times New Roman", Times, serif;
 }
 
 * {
