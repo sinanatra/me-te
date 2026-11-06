@@ -26,6 +26,6 @@
 
 <footer class="text-sm">
 	<nav aria-label="Main">
-		<a href={resolve('/about')} class="fixed bottom-(--pad) left-(--pad) z-[2000]">About</a>
+		<a href={resolve('/about')} class="fixed bottom-(--pad) left-(--pad) z-2000 flex h-(--bar) items-center text-base leading-none">About</a>
 	</nav>
 </footer>

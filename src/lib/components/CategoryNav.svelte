@@ -12,9 +12,9 @@
 </script>
 
 <nav aria-label="Categories" class="pointer-events-none fixed inset-x-0 bottom-0 z-[2000] flex justify-center pb-(--pad) [&_a]:pointer-events-auto">
-	<ul class="flex gap-2">
+	<ul class="flex h-(--bar) items-center gap-2">
 		{#each links as link (link.href)}
-			<li>
+			<li class="flex">
 				<a href={link.href} class="pill" aria-current={page.url.pathname === link.href ? 'page' : undefined}>
 					{@html link.label}
 				</a>

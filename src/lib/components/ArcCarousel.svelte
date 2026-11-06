@@ -169,14 +169,23 @@
     const on = point(f);
     const px = on.x + noise(index, 1) * spread;
     const py = on.y + noise(index, 2) * spread;
-    const y = t < 0 ? py - t * (1.5 * height - py) : py;
+    const mobile = 2 * half <= 640;
     const turn = o.frontTurn + (o.endTurn - o.frontTurn) * f ** o.turnEase;
     const tilt = noise(index, 3) * o.tilt * loose;
 
     const fitted = side === "left" ? coverWidth(projects[index]) : null;
     const width = fitted?.width ?? itemWidth;
     const reach = (width * scale * Math.cos((turn * Math.PI) / 180)) / 2;
-    const x = o.hinge ? Math.max(reach + 8, Math.min(px, half - reach)) : px;
+    const x =
+      o.hinge || mobile
+        ? Math.max(reach + 8, Math.min(px, half - reach))
+        : px;
+    const tall = fitted ? fitted.width / fitted.ratio : itemWidth / boxRatio;
+    const rise = (tall * scale) / 2 + 8;
+    const fit = mobile
+      ? Math.min(Math.max(py, rise), Math.max(rise, height - rise))
+      : py;
+    const y = t < 0 ? fit - t * (1.5 * height - fit) : fit;
     const mirror = side === "right";
     const flip = mirror ? -1 : 1;
 
@@ -188,6 +197,14 @@
         ? [`width: ${fitted.width}px`, `aspect-ratio: ${fitted.ratio}`]
         : []),
     ].join(";");
+  }
+
+  let windowResizing = $state(false);
+  let resizeEnd: ReturnType<typeof setTimeout>;
+  function onresize() {
+    windowResizing = true;
+    clearTimeout(resizeEnd);
+    resizeEnd = setTimeout(() => (windowResizing = false), 200);
   }
 
   let settle: ReturnType<typeof setTimeout>;
@@ -255,13 +272,13 @@
   }
 </script>
 
-<svelte:window {onkeydown} {onpointermove} {onpointerup} />
+<svelte:window {onkeydown} {onpointermove} {onpointerup} {onresize} />
 
 <div
   class="curtains flex h-dvh w-full justify-center overflow-hidden bg-[#dddddd]"
   class:open={isOpen}
   class:narrow
-  class:resizing={detail.resizing}
+  class:resizing={detail.resizing || windowResizing}
   style="--item-width: {itemWidth}px;{detail.width
     ? `--open-width: ${detail.width}px`
     : ''}"
@@ -541,6 +558,11 @@
 
     .half {
       perspective: 1000px;
+    }
+
+    .stage-center {
+      position: relative;
+      z-index: 1800;
     }
 
     .item {

@@ -39,8 +39,8 @@
 	}
 </script>
 
-<article bind:this={article} class="relative h-full w-(--open-width) flex-none py-(--stroke) max-sm:py-14" style="--split: {detail.split}">
-	<a href={closeHref} class="absolute top-[calc(var(--stroke)+var(--pad))] right-[calc(var(--stroke)+var(--pad))] z-10 text-2xl leading-none max-sm:top-4 max-sm:right-auto max-sm:left-1/2 max-sm:-translate-x-1/2" aria-label="Close">×</a>
+<article bind:this={article} class="relative h-full w-(--open-width) flex-none py-(--stroke) max-sm:pt-0 max-sm:pb-[calc(var(--bar)+2*var(--pad))]" style="--split: {detail.split}">
+	<a href={closeHref} class="absolute top-[calc(var(--stroke)+var(--pad))] right-[calc(var(--stroke)+var(--pad))] z-10 text-2xl leading-none max-sm:top-auto max-sm:bottom-(--pad) max-sm:right-auto max-sm:left-1/2 max-sm:flex max-sm:h-(--bar) max-sm:-translate-x-1/2 max-sm:items-center" aria-label="Close">×</a>
 
 	{#key project.slug}
 		<div class="detail grid h-full" in:fade={{ duration: 300 }}>
