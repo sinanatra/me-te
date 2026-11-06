@@ -3,8 +3,16 @@
 @font-face {
   font-family: "ABC Areal Semi Mono";
   src: url("/ABCArealSemiMonoVariable.ttf") format("truetype");
-  font-weight: 100 400;
+  font-weight: 400 700;
   font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Areal Semi Mono";
+  src: url("/ABCArealSemiMono-RegularItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
   font-display: swap;
 }
 
