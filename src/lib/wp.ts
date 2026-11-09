@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
-import { HOME_PAGE_SLUG, WP_API } from '$lib/config';
-import { decode, plain } from '$lib/text';
+import { WP_API } from '$lib/config';
+import { plain } from '$lib/text';
 
 type Fetch = typeof fetch;
 
@@ -50,6 +50,7 @@ type WPRendered = { rendered: string };
 type WPMedia = {
 	source_url: string;
 	alt_text: string;
+	mime_type?: string;
 	media_details?: { width: number; height: number; sizes?: Record<string, { source_url: string }> };
 };
 type WPPost = {
@@ -57,12 +58,12 @@ type WPPost = {
 	slug: string;
 	date: string;
 	title: WPRendered;
-	excerpt: WPRendered;
 	content: WPRendered;
-	meta?: { external_url?: string };
-	_embedded?: {
-		'wp:featuredmedia'?: WPMedia[];
-	};
+	_embedded?: { 'wp:featuredmedia'?: WPMedia[] };
+};
+type WPCard = WPPost & {
+	meta?: { link_interno?: string; link_esterno?: string };
+	_embedded?: { 'wp:term'?: { slug: string; taxonomy: string }[][] };
 };
 type WPPage = { slug: string; title: WPRendered; content: WPRendered };
 
@@ -102,11 +103,21 @@ function contentImages(html: string): Image[] {
 	});
 }
 
+const host = (href: string) => {
+	try {
+		return new URL(href).hostname.replace(/^www\./, '');
+	} catch {
+		return href;
+	}
+};
+
+const isMete = (href: string) => host(href).endsWith('mete.fyi');
+
 function contentLinks(html: string): Link[] {
 	const links = new Map<string, Link>();
 	for (const [, href, label] of html.matchAll(/<a\b[^>]*href="(https?:\/\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
-		if (new URL(href).hostname.endsWith('mete.fyi') || links.has(href)) continue;
-		links.set(href, { href, label: plain(label).trim() || new URL(href).hostname });
+		if (isMete(href) || links.has(href)) continue;
+		links.set(href, { href, label: plain(label).trim() || host(href) });
 	}
 	return [...links.values()];
 }
@@ -115,77 +126,17 @@ const unstyled = (html: string) => html.replace(/\sstyle="[^"]*"/gi, '');
 
 const cleanContent = (html: string) => unstyled(html).replace(/<h1\b[^>]*>[\s\S]*?<\/h1>/i, '');
 
-function toProject(post: WPPost): Project {
-	const media = post._embedded?.['wp:featuredmedia']?.[0];
-	const images = contentImages(post.content.rendered);
-
+function toImage(media: WPMedia | undefined, alt: string): Image | null {
+	if (!media) return null;
+	const sizes = media.media_details?.sizes;
+	const thumb = media.mime_type === 'image/gif' ? media.source_url : (sizes?.medium_large ?? sizes?.large)?.source_url;
 	return {
-		id: post.id,
-		slug: post.slug,
-		title: post.title.rendered,
-		date: post.date,
-		excerpt: post.excerpt.rendered,
-		content: cleanContent(post.content.rendered),
-		categories: [],
-		cover: media
-			? {
-					src: media.source_url,
-					thumb: media.media_details?.sizes?.medium_large?.source_url ?? media.source_url,
-					alt: media.alt_text,
-					width: media.media_details?.width ?? 0,
-					height: media.media_details?.height ?? 0
-				}
-			: (images[0] ?? null),
-		images,
-		links: contentLinks(post.content.rendered),
-		externalUrl: post.meta?.external_url || null,
-		video: null,
-		detail: true
+		src: media.source_url,
+		thumb: thumb ?? media.source_url,
+		alt: media.alt_text || alt,
+		width: media.media_details?.width ?? 0,
+		height: media.media_details?.height ?? 0
 	};
-}
-
-const POST_QUERY = '_embed=wp:featuredmedia&per_page=100';
-
-type GalleryItem = {
-	premium_gallery_img_name: string;
-	premium_gallery_img_desc?: string;
-	premium_gallery_img_category?: string;
-	premium_gallery_img?: { url?: string; id?: number };
-	premium_gallery_img_link?: { url?: string } | null;
-	premium_gallery_img_existing?: string | number | null;
-	premium_gallery_video?: string | null;
-	premium_gallery_video_url?: string | null;
-};
-
-// the homepage's Elementor gallery is the full portfolio: order, categories, and projects that have no post
-async function getGallery(fetch: Fetch): Promise<GalleryItem[]> {
-	const [page] = await get<WPPage[]>(fetch, `/pages?slug=${HOME_PAGE_SLUG}`);
-	const settings = page?.content.rendered.match(/data-settings="([^"]*premium_gallery_img_name[^"]*)"/)?.[1];
-	return settings ? JSON.parse(decode(settings)).premium_gallery_img_content ?? [] : [];
-}
-
-type GalleryMedia = { thumb: string | null; width: number; height: number };
-
-async function galleryMedia(fetch: Fetch, gallery: GalleryItem[]): Promise<Map<number, GalleryMedia>> {
-	const ids = gallery.map((item) => item.premium_gallery_img?.id).filter((id): id is number => !!id);
-	if (!ids.length) return new Map();
-	const media = await get<(WPMedia & { id: number; mime_type: string })[]>(
-		fetch,
-		`/media?include=${ids.join(',')}&per_page=100&_fields=id,source_url,mime_type,media_details`
-	);
-	return new Map(
-		media.map((m) => [
-			m.id,
-			{
-				thumb:
-					m.mime_type === 'image/gif'
-						? null
-						: (m.media_details?.sizes?.medium_large?.source_url ?? m.media_details?.sizes?.large?.source_url ?? m.source_url),
-				width: m.media_details?.width ?? 0,
-				height: m.media_details?.height ?? 0
-			}
-		])
-	);
 }
 
 function embedUrl(url: string): string | null {
@@ -195,75 +146,46 @@ function embedUrl(url: string): string | null {
 	return vimeo ? `https://player.vimeo.com/video/${vimeo}` : null;
 }
 
-const slugify = (text: string) =>
-	text
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-|-$/g, '');
+const postSlug = (url: string) => (isMete(url) ? url.match(/mete\.fyi\/([^/?#]+)/)?.[1] : undefined);
 
-function fromGallery(item: GalleryItem, index: number, post: Project | undefined, media: Map<number, GalleryMedia>): Project {
-	const name = item.premium_gallery_img_name;
-	const titleHtml = name.match(/<b>([\s\S]*?)<\/b>/i)?.[1] ?? name;
-	const title = plain(titleHtml.replace(/<br\s*\/?>/gi, ' ')).replace(/\s+/g, ' ').trim();
-	const subtitle = plain(name.replace(titleHtml, '').replace(/<br\s*\/?>/gi, ' ')).replace(/\s+/g, ' ').trim();
-	const categories = (item.premium_gallery_img_category ?? '').split(',').map((c) => slugify(c)).filter(Boolean);
-	const src = item.premium_gallery_img?.url;
-	const file = media.get(item.premium_gallery_img?.id ?? 0);
-	const cover = src ? { src, thumb: file?.thumb ?? src, alt: title, width: file?.width ?? 0, height: file?.height ?? 0 } : null;
+function toProject(card: WPCard, post: WPPost | undefined): Project {
+	const title = plain(card.title.rendered);
+	const external = card.meta?.link_esterno?.trim() || null;
+	const video = external ? embedUrl(external) : null;
+	const images = post ? contentImages(post.content.rendered) : [];
+	const cover = toImage(card._embedded?.['wp:featuredmedia']?.[0], title) ?? toImage(post?._embedded?.['wp:featuredmedia']?.[0], title) ?? images[0] ?? null;
+	const links = [...(external ? [{ href: external, label: host(external) }] : []), ...(post ? contentLinks(post.content.rendered) : [])];
 
-	const videoUrl = (item.premium_gallery_video === 'true' && item.premium_gallery_video_url) || '';
-	const video = videoUrl ? embedUrl(videoUrl) : null;
-
-	if (post) return { ...post, categories, cover: cover ?? post.cover, video };
-
-	const url = item.premium_gallery_img_link?.url ?? '';
-	const external = /^https?:\/\//.test(url) && !new URL(url).hostname.endsWith('mete.fyi') ? url : null;
-	const role = item.premium_gallery_img_desc ?? '';
 	return {
-		id: -(index + 1),
-		slug: slugify(title),
-		title,
-		date: null,
-		excerpt: subtitle,
-		content: [subtitle, role].filter(Boolean).map((t) => `<p>${t}</p>`).join(''),
-		categories,
+		id: card.id,
+		slug: card.slug,
+		title: card.title.rendered,
+		date: card.date,
+		excerpt: card.content.rendered,
+		content: cleanContent(post?.content.rendered ?? card.content.rendered),
+		categories: (card._embedded?.['wp:term'] ?? [])
+			.flat()
+			.filter((t) => t.taxonomy === 'home-card-category')
+			.map((t) => t.slug),
 		cover,
-		images: cover ? [cover] : [],
-		links: [external, videoUrl]
-			.filter((href): href is string => !!href)
-			.map((href) => ({ href, label: new URL(href).hostname.replace(/^www\./, '') })),
-		externalUrl: external,
+		images: images.length ? images : cover ? [cover] : [],
+		links: links.filter((link, i) => links.findIndex((l) => l.href === link.href) === i),
+		externalUrl: null,
 		video,
-		detail: !!video
+		detail: !!post || !!video
 	};
 }
 
 export async function getProjects(fetch: Fetch): Promise<Project[]> {
-	const [posts, gallery] = await Promise.all([get<WPPost[]>(fetch, `/posts?${POST_QUERY}`).then((p) => p.map(toProject)), getGallery(fetch)]);
-	const media = await galleryMedia(fetch, gallery);
-	const byId = new Map(posts.map((p) => [p.id, p]));
+	const [cards, posts] = await Promise.all([
+		get<WPCard[]>(fetch, '/home-card?per_page=100&_embed=wp:featuredmedia,wp:term'),
+		get<WPPost[]>(fetch, '/posts?per_page=100&_embed=wp:featuredmedia')
+	]);
 	const bySlug = new Map(posts.map((p) => [p.slug, p]));
-	const used = new Set<number>();
-	const slugs = new Set<string>();
-
-	const projects = gallery.map((item, i) => {
-		const url = item.premium_gallery_img_link?.url ?? '';
-		const postSlug = url.match(/mete\.fyi\/([^/?#]+)/)?.[1];
-		const post = byId.get(Number(item.premium_gallery_img_existing)) ?? (postSlug ? bySlug.get(postSlug) : undefined);
-		if (post) used.add(post.id);
-		const project = fromGallery(item, i, post, media);
-		let slug = project.slug;
-		for (let n = 2; slugs.has(slug); n++) slug = `${project.slug}-${n}`;
-		slugs.add(slug);
-		return { ...project, slug };
-	});
-
-	return [...projects, ...posts.filter((p) => !used.has(p.id) && !slugs.has(p.slug))];
+	return cards.map((card) => toProject(card, bySlug.get(postSlug(card.meta?.link_interno ?? '') ?? '')));
 }
 
-const CATEGORY_ORDER = ['visual', 'video', 'curation', 'web'];
+const CATEGORY_ORDER = ['visual', 'video', 'curation', 'web', 'writing'];
 
 export function categoriesOf(projects: Project[]): Category[] {
 	const slugs = [...new Set(projects.flatMap((p) => p.categories))];

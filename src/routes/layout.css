@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "ABC Areal Semi Mono";
-  src: url("/ABCArealSemiMonoVariable.ttf") format("truetype");
+  src: url("$lib/assets/fonts/ABCArealSemiMonoVariable.ttf") format("truetype");
   font-weight: 400 700;
   font-style: normal;
   font-display: swap;
@@ -10,7 +10,7 @@
 
 @font-face {
   font-family: "ABC Areal Semi Mono";
-  src: url("/ABCArealSemiMono-RegularItalic.woff2") format("woff2");
+  src: url("$lib/assets/fonts/ABCArealSemiMono-RegularItalic.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -19,8 +19,8 @@
 @font-face {
   font-family: "Bespoke Serif";
   src:
-    url("/BespokeSerif-Regular.woff2") format("woff2"),
-    url("/BespokeSerif-Regular.woff") format("woff");
+    url("$lib/assets/fonts/BespokeSerif-Regular.woff2") format("woff2"),
+    url("$lib/assets/fonts/BespokeSerif-Regular.woff") format("woff");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -29,8 +29,8 @@
 @font-face {
   font-family: "Bespoke Serif";
   src:
-    url("/BespokeSerif-Italic.woff2") format("woff2"),
-    url("/BespokeSerif-Italic.woff") format("woff");
+    url("$lib/assets/fonts/BespokeSerif-Italic.woff2") format("woff2"),
+    url("$lib/assets/fonts/BespokeSerif-Italic.woff") format("woff");
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -39,13 +39,10 @@
 @theme {
   --font-sans: "ABC Areal Semi Mono", ui-monospace, monospace;
   --font-serif: "Bespoke Serif", "Times New Roman", Times, serif;
-}
-
-* {
-  scrollbar-width: none;
-}
-*::-webkit-scrollbar {
-  display: none;
+  --color-grey: #dddddd;
+  --color-mist: #efefef;
+  --color-link: #0000ee;
+  --color-sun: rgb(255, 250, 161);
 }
 
 html {
@@ -53,9 +50,14 @@ html {
   --pad: 0.75rem;
   --bar: 1.6rem;
   font-size: clamp(13px, 0.45vw + 9.5px, 18px);
+  scrollbar-width: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -64,35 +66,58 @@ body {
   font-weight: 600;
 }
 
-.font-serif,
+::selection {
+  background: black;
+  color: white;
+}
+
 .logo {
   --logo: 6.5rem;
   position: fixed;
-  /* the gif has transparent margins: 27px left, 43px top at 768px wide */
   top: calc(var(--pad) - var(--logo) * 43 / 768);
   left: calc(var(--pad) - var(--logo) * 27 / 768);
   z-index: 1500;
   width: var(--logo);
 }
 
-::selection {
-  background: black;
-  color: white;
+/* cards and opened panels: one base size from the box width, everything inside in em */
+.sheet {
+  container-type: inline-size;
 }
+
+.sheet > * {
+  font-family: var(--font-serif);
+  font-size: clamp(0.85rem, 3.2cqi, 1.2rem);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.title {
+  margin-top: -0.12em;
+  padding-block: 0.12em 0.16em;
+  font-family: var(--font-sans);
+  font-size: 2em;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
 .pill {
   display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
   padding: 0.1em 0.6em;
   border: 1px solid currentColor;
   border-radius: 999px;
-  background: #dddddd;
+  background: var(--color-grey);
   font-family: var(--font-sans);
-  font-size: var(--pill-size, 0.72rem);
-  /* font-weight: 400; */
+  font-size: 0.75em;
   line-height: 1.4;
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 a.pill:hover,
@@ -102,66 +127,37 @@ a.pill[aria-current="page"] {
   color: white;
 }
 
-.reading {
-  container-type: inline-size;
-}
-
-/* sized on the children: container units on the container itself would ignore its own width */
-.reading > * {
-  --pill-size: 0.75em;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(0.85rem, 4.2cqi, 1.2rem);
-}
-
-.reading-title {
-  margin-bottom: 0.25em;
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em 1.2em;
   font-family: var(--font-sans);
-  font-size: clamp(1.6rem, 11cqi, 3.4rem);
-  font-style: italic;
-  font-weight: 400;
-  line-height: 0.98;
-}
-
-.reading-title,
-.content {
-  overflow-wrap: anywhere;
-  hyphens: auto;
-}
-
-.content {
-  max-width: 40em;
-  line-height: 1.375;
-}
-
-.content :is(table, pre) {
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
+  font-size: 0.75em;
 }
 
 .link,
 .content a,
 .content a * {
   background: none !important;
-  color: #0000ee !important;
+  color: var(--color-link) !important;
   font: inherit !important;
-  text-decoration: underline !important;
-  text-decoration-thickness: 1px !important;
+  text-decoration: underline 1px !important;
   text-underline-offset: 0.2em;
 }
 
-.content p,
-.content ul,
-.content ol,
-.content .elementor-widget-text-editor {
+.content {
+  max-width: 40em;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.content :is(p, ul, ol, .elementor-widget-text-editor) {
   margin-bottom: 0.75em;
 }
 
 .content :is(h1, h2, h3, h4, h5, h6) {
   margin: 1.25em 0 0.25em;
   font-size: 1em;
-  /* font-weight: 700; */
   line-height: inherit;
 }
 
@@ -182,4 +178,10 @@ a.pill[aria-current="page"] {
 
 .content iframe {
   aspect-ratio: 16 / 9;
+}
+
+.content :is(table, pre) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }

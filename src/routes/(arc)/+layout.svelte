@@ -54,7 +54,6 @@
 	options={look}
 	current={slug}
 	{open}
-	narrow={!!shownProject}
 	onnavigate={(p) => goto(resolve(`/projects/${p.slug}`), { replaceState: true, noScroll: true, keepFocus: true })}
 	onclose={close}
 >

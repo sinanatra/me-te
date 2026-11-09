@@ -7,10 +7,10 @@
 
 <svelte:head><title>{page.status} · MeTe</title></svelte:head>
 
-<section class="reading grid h-dvh place-items-center bg-[#dddddd] p-(--pad) text-center">
-	<div>
-		<h1 class="reading-title">{page.status}</h1>
-		<p class="mb-(--pad)">{missing ? 'This mèta does not exist.' : page.error?.message}</p>
+<section class="sheet grid h-dvh place-items-center bg-grey p-(--pad) text-center">
+	<div class="flex flex-col items-center gap-[0.75em]">
+		<h1 class="title">{page.status}</h1>
+		<p>{missing ? 'This mèta does not exist.' : page.error?.message}</p>
 		<a href={resolve('/')} class="pill">Back</a>
 	</div>
 </section>

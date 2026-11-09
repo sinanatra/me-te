@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import font from '$lib/assets/fonts/ABCArealSemiMonoVariable.woff2?url';
+	import font from '$lib/assets/fonts/ABCArealSemiMonoVariable.ttf?url';
 	import { LOGO } from '$lib/config';
 	import './layout.css';
 
@@ -14,10 +14,9 @@
 </script>
 
 <svelte:head>
-	<link rel="preload" href={font} as="font" type="font/woff2" crossorigin="anonymous" />
+	<link rel="preload" href={font} as="font" type="font/ttf" crossorigin="anonymous" />
 </svelte:head>
 
-<div class="frame" aria-hidden="true"></div>
 <a href={resolve('/')} class="logo"><img src={LOGO} alt="MeTe" width="768" height="432" /></a>
 
 <main>

@@ -14,7 +14,6 @@
     open: isOpen = !!current,
     options = ARC,
     links = true,
-    narrow = false,
     onnavigate,
     onclose,
     children,
@@ -24,7 +23,6 @@
     open?: boolean;
     options?: ArcOptions;
     links?: boolean;
-    narrow?: boolean;
     onnavigate?: (project: Project) => void;
     onclose?: () => void;
     children?: Snippet;
@@ -275,9 +273,8 @@
 <svelte:window {onkeydown} {onpointermove} {onpointerup} {onresize} />
 
 <div
-  class="curtains flex h-dvh w-full justify-center overflow-hidden bg-[#dddddd]"
+  class="curtains flex h-dvh w-full justify-center overflow-hidden bg-grey"
   class:open={isOpen}
-  class:narrow
   class:resizing={detail.resizing || windowResizing}
   style="--item-width: {itemWidth}px;{detail.width
     ? `--open-width: ${detail.width}px`
@@ -309,6 +306,7 @@
         >
           {#if project.cover}
             <img
+              class="h-full w-full object-cover"
               src={project.cover.thumb}
               alt={project.cover.alt}
               draggable="false"
@@ -334,7 +332,7 @@
       {#each projects as project, i (project.id)}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <div
-          class="item card"
+          class="item card sheet flex flex-col overflow-hidden p-(--pad)"
           class:closed={!project.detail && i === active}
           style="{place(i, 'right')};background:{PALETTE[i % PALETTE.length]
             .bg};color:{PALETTE[i % PALETTE.length].fg}"
@@ -342,38 +340,48 @@
           role="presentation"
           onclick={(e) => open(e, i)}
         >
-          <h2 class="title" class:outline={PALETTE[i % PALETTE.length].outline}>
-            {@html project.title}
-          </h2>
-          {#if project.categories.length}
-            <ul class="meta flex flex-wrap gap-[1cqi]">
-              {#each project.categories as category (category)}
-                <li class="pill">{category}</li>
-              {/each}
-            </ul>
-          {/if}
-          <p class="text">{description(project)}</p>
-          {#if project.links.length || project.detail}
-            <div class="foot">
-              <ul class="links">
-                {#each project.links as link (link.href)}
-                  <li>
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="external noopener"
-                      class="link"
-                      tabindex={i === active ? 0 : -1}
-                      onclick={(e) => e.stopPropagation()}>↗ {link.label}</a
-                    >
-                  </li>
+          <div class="flex min-h-0 flex-col gap-[0.75em]">
+            <h2
+              class="title line-clamp-3 shrink-0"
+              class:outline={PALETTE[i % PALETTE.length].outline}
+            >
+              {@html project.title}
+            </h2>
+            {#if project.categories.length}
+              <ul class="flex flex-wrap gap-[0.4em] max-sm:hidden">
+                {#each project.categories as category (category)}
+                  <li class="pill">{category}</li>
                 {/each}
               </ul>
-              {#if project.detail}
-                <span class="more" aria-hidden="true">More info</span>
-              {/if}
-            </div>
-          {/if}
+            {/if}
+            <p class="line-clamp-6 text-pretty max-sm:line-clamp-10">
+              {description(project)}
+            </p>
+            {#if project.links.length || project.detail}
+              <div class="flex items-end justify-between gap-[1.2em]">
+                <ul class="links max-sm:hidden">
+                  {#each project.links as link (link.href)}
+                    <li>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="external noopener"
+                        class="link"
+                        tabindex={i === active ? 0 : -1}
+                        onclick={(e) => e.stopPropagation()}>↗ {link.label}</a
+                      >
+                    </li>
+                  {/each}
+                </ul>
+                {#if project.detail}
+                  <span
+                    class="ml-auto shrink-0 font-sans text-[0.75em]"
+                    aria-hidden="true">More info</span
+                  >
+                {/if}
+              </div>
+            {/if}
+          </div>
         </div>
       {/each}
     {/if}
@@ -385,6 +393,11 @@
 </div>
 
 <style>
+  .curtains {
+    --open-width: min(52vw, 960px);
+    --ease: 900ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
   .half {
     position: relative;
     flex: none;
@@ -393,25 +406,19 @@
     touch-action: none;
     user-select: none;
     perspective: 1600px;
+    transition: translate var(--ease);
   }
 
   .half.left {
     perspective-origin: 100% 50%;
+    translate: calc(var(--open-width) / 2) 0;
     background: white;
   }
 
   .half.right {
     perspective-origin: 0% 50%;
-    background: #efefef;
-  }
-
-  .curtains {
-    --open-width: min(52vw, 960px);
-    --ease: 900ms cubic-bezier(0.65, 0, 0.35, 1);
-  }
-
-  .curtains.narrow {
-    --open-width: min(52vw, 960px);
+    translate: calc(var(--open-width) / -2) 0;
+    background: var(--color-mist);
   }
 
   .stage-center {
@@ -421,21 +428,9 @@
     width: var(--open-width);
     height: 100%;
     overflow: hidden;
-    background: #f2f2f2;
+    background: var(--color-mist);
     clip-path: inset(0 50%);
     transition: clip-path var(--ease);
-  }
-
-  .half {
-    transition: translate var(--ease);
-  }
-
-  .half.left {
-    translate: calc(var(--open-width) / 2) 0;
-  }
-
-  .half.right {
-    translate: calc(var(--open-width) / -2) 0;
   }
 
   .open .stage-center {
@@ -453,103 +448,29 @@
 
   .item {
     position: absolute;
-    left: 0;
     top: 0;
-    display: block;
+    left: 0;
     width: var(--item-width);
     aspect-ratio: 4 / 3;
-    transform-origin: center;
     background: white;
     outline: 1px solid black;
     will-change: transform;
     cursor: pointer;
   }
 
-  .item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .item.closed {
+    cursor: default;
   }
 
   .card {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
     height: auto;
     max-height: calc(var(--item-width) * 3 / 4);
     aspect-ratio: auto;
-    padding: var(--pad);
-    container-type: inline-size;
   }
 
-  .title {
-    display: -webkit-box;
-    overflow: hidden;
-    font-family: var(--font-sans);
-    font-style: italic;
-    font-weight: 400;
-    flex: none;
-    margin-top: -0.12em;
-    padding-block: 0.12em 0.16em;
-    font-size: 9cqi;
-    line-height: 0.98;
-    letter-spacing: -0.015em;
-    text-wrap: balance;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-  }
-
-  .title.outline {
+  .outline {
     color: transparent;
     -webkit-text-stroke: 1px white;
-  }
-
-  .meta {
-    --pill-size: 2.1cqi;
-    margin-top: 3cqi;
-  }
-
-  .text {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    display: -webkit-box;
-    max-width: 34em;
-    margin-top: 3cqi;
-    overflow: hidden;
-    font-size: 3.2cqi;
-    line-height: 1.35;
-    text-wrap: pretty;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 6;
-    line-clamp: 6;
-  }
-
-  .foot {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1.4em;
-    margin-top: auto;
-    padding-top: 3cqi;
-    font-size: 2.4cqi;
-    letter-spacing: 0.02em;
-  }
-
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4em 1.4em;
-  }
-
-
-  .more {
-    flex: none;
-    margin-left: auto;
-  }
-
-  .item.closed {
-    cursor: default;
   }
 
   @media (max-width: 640px) {
@@ -570,28 +491,8 @@
       aspect-ratio: 3 / 4;
     }
 
-    .title {
-      font-size: 11cqi;
-    }
-
-    .text {
-      font-size: 5.6cqi;
-      -webkit-line-clamp: 10;
-      line-clamp: 10;
-    }
-
     .card {
       max-height: calc(var(--item-width) * 4 / 3);
-      aspect-ratio: auto;
-    }
-
-    .meta,
-    .links {
-      display: none;
-    }
-
-    .foot {
-      font-size: 4.5cqi;
     }
   }
 </style>
