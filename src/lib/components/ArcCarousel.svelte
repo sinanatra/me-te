@@ -189,6 +189,7 @@
 
     return [
       `z-index: ${1000 - Math.round(t * 50)}`,
+      `filter: blur(${Math.min(40, Math.round((o.blur * f * 2) / scale) / 2)}px)`,
       `transform: translate(${mirror ? half - x : x}px, ${y}px) translate(-50%, -50%) scale(${scale}) rotateZ(${flip * tilt}deg) rotateY(${flip * turn}deg)`,
       `pointer-events: ${t < -0.5 ? "none" : "auto"}`,
       ...(fitted

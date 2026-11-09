@@ -11,6 +11,7 @@ export type ArcOptions = {
 	endY: number;
 	step: number;
 	farScale: number;
+	blur: number;
 	size: number;
 	frontTurn: number;
 	endTurn: number;
@@ -36,6 +37,7 @@ export const ARC: ArcOptions = {
 	endY: 0.08,
 	step: 0.15,
 	farScale: 0.06,
+	blur: 3,
 	size: 1,
 	frontTurn: 4,
 	endTurn: 90,
@@ -72,8 +74,8 @@ export const LOOKS: Partial<ArcOptions>[] = [
 	{ endTurn: 0, turnEase: 3, wave: 0, vary: false, scatter: 0.35, tilt: 14, hinge: false },
 	{
 		curve: 'line',
-		startY: 0.7,
-		endY: 0.27,
+		startY: 0.5,
+		endY: 0.19,
 		step: 0.25,
 		farScale: 0.39,
 		size: 1.27,
@@ -83,7 +85,8 @@ export const LOOKS: Partial<ArcOptions>[] = [
 		wave: 0,
 		waves: 0.85,
 		scatter: 0.69
-	}
+	},
+	{ curve: 'line', startX: 0.51, startY: 0.74, endY: 0, endTurn: 0, wave: 0.18, waves: 0.25 }
 ];
 
 export const randomLook = (): ArcOptions => ({ ...ARC, ...LOOKS[Math.floor(Math.random() * LOOKS.length)] });
@@ -133,6 +136,7 @@ export const FIELDS: { group: string; fields: ArcField[] }[] = [
 			{ key: 'size', label: 'Size', min: 0.4, max: 1.4, step: 0.01 },
 			{ key: 'step', label: 'Spacing', min: 0.04, max: 0.6, step: 0.01 },
 			{ key: 'farScale', label: 'Last card size', min: 0.02, max: 0.6, step: 0.01 },
+			{ key: 'blur', label: 'Depth blur', min: 0, max: 12, step: 0.5 },
 			{ key: 'frontTurn', label: 'Front turn', min: 0, max: 60, step: 1 },
 			{ key: 'endTurn', label: 'End turn', min: 0, max: 90, step: 1 },
 			{ key: 'turnEase', label: 'Turn easing', min: 0.3, max: 3, step: 0.05 }
