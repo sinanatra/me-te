@@ -1,6 +1,6 @@
 export const WP_API = "https://mete.fyi/wp-json/wp/v2";
 
-export const LOGO = "https://mete.fyi/wp-content/uploads/2023/02/Mete_Logo_D_2024.gif";
+export const LOGO = "/logo.gif";
 
 
 export const PALETTE = [

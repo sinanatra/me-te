@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
 import { WP_API } from '$lib/config';
-import { plain } from '$lib/text';
+import { decode, plain } from '$lib/text';
 
 type Fetch = typeof fetch;
 
@@ -36,7 +36,7 @@ export type Project = {
 	images: Image[];
 	links: Link[];
 	externalUrl: string | null;
-	video: string | null;
+	videos: string[];
 	detail: boolean;
 };
 
@@ -48,6 +48,7 @@ export type Page = {
 
 type WPRendered = { rendered: string };
 type WPMedia = {
+	id: number;
 	source_url: string;
 	alt_text: string;
 	mime_type?: string;
@@ -59,9 +60,15 @@ type WPPost = {
 	date: string;
 	title: WPRendered;
 	content: WPRendered;
+	meta?: {
+		data?: string;
+		link?: string;
+		media_gallery?: (string | number)[] | false | '';
+		link_video?: Record<string, { link_singolo_video?: string }> | '' | [];
+	};
 	_embedded?: { 'wp:featuredmedia'?: WPMedia[] };
 };
-type WPCard = WPPost & {
+type WPCard = Omit<WPPost, 'meta'> & {
 	meta?: { link_interno?: string; link_esterno?: string };
 	_embedded?: { 'wp:term'?: { slug: string; taxonomy: string }[][] };
 };
@@ -111,7 +118,9 @@ const host = (href: string) => {
 	}
 };
 
-const isMete = (href: string) => host(href).endsWith('mete.fyi');
+const sameUrl = (href: string) => href.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/(?=$|[?#])/, '').toLowerCase();
+
+const isMete =(href: string) => host(href).endsWith('mete.fyi');
 
 function contentLinks(html: string): Link[] {
 	const links = new Map<string, Link>();
@@ -148,19 +157,35 @@ function embedUrl(url: string): string | null {
 
 const postSlug = (url: string) => (isMete(url) ? url.match(/mete\.fyi\/([^/?#]+)/)?.[1] : undefined);
 
-function toProject(card: WPCard, post: WPPost | undefined): Project {
+const galleryIds = (post: WPPost | undefined) => (Array.isArray(post?.meta?.media_gallery) ? post.meta.media_gallery.map(Number).filter(Boolean) : []);
+
+const videoUrls = (post: WPPost | undefined) =>
+	Object.values(post?.meta?.link_video || {})
+		.map((v) => decode(v.link_singolo_video?.trim() ?? ''))
+		.filter(Boolean);
+
+const toLink = (href: string): Link => ({ href, label: host(href) });
+
+function toProject(card: WPCard, post: WPPost | undefined, media: Map<number, WPMedia>): Project {
 	const title = plain(card.title.rendered);
 	const external = card.meta?.link_esterno?.trim() || null;
-	const video = external ? embedUrl(external) : null;
-	const images = post ? contentImages(post.content.rendered) : [];
+	const externalVideo = external ? embedUrl(external) : null;
+	const videos = [...new Set([...videoUrls(post).map(embedUrl), externalVideo].filter((v): v is string => !!v))];
+	const gallery = galleryIds(post).flatMap((id) => toImage(media.get(id), title) ?? []);
+	const images = gallery.length ? gallery : post ? contentImages(post.content.rendered) : [];
 	const cover = toImage(card._embedded?.['wp:featuredmedia']?.[0], title) ?? toImage(post?._embedded?.['wp:featuredmedia']?.[0], title) ?? images[0] ?? null;
-	const links = [...(external ? [{ href: external, label: host(external) }] : []), ...(post ? contentLinks(post.content.rendered) : [])];
+	const primary = post?.meta?.link?.trim();
+	const links = [
+		...(primary ? [toLink(primary)] : []),
+		...(external && !externalVideo ? [toLink(external)] : []),
+		...(post ? contentLinks(post.content.rendered) : [])
+	];
 
 	return {
 		id: card.id,
 		slug: card.slug,
 		title: card.title.rendered,
-		date: card.date,
+		date: post?.meta?.data?.trim() || null,
 		excerpt: card.content.rendered,
 		content: cleanContent(post?.content.rendered ?? card.content.rendered),
 		categories: (card._embedded?.['wp:term'] ?? [])
@@ -169,11 +194,20 @@ function toProject(card: WPCard, post: WPPost | undefined): Project {
 			.map((t) => t.slug),
 		cover,
 		images: images.length ? images : cover ? [cover] : [],
-		links: links.filter((link, i) => links.findIndex((l) => l.href === link.href) === i),
+		links: links.filter((link, i) => links.findIndex((l) => sameUrl(l.href) === sameUrl(link.href)) === i),
 		externalUrl: null,
-		video,
-		detail: !!post || !!video
+		videos,
+		detail: !!post || videos.length > 0
 	};
+}
+
+async function getMedia(fetch: Fetch, ids: number[]): Promise<Map<number, WPMedia>> {
+	const unique = [...new Set(ids)].sort((a, b) => a - b);
+	const chunks = Array.from({ length: Math.ceil(unique.length / 100) }, (_, i) => unique.slice(i * 100, i * 100 + 100));
+	const pages = await Promise.all(
+		chunks.map((chunk) => get<WPMedia[]>(fetch, `/media?include=${chunk.join(',')}&per_page=100&_fields=id,source_url,alt_text,mime_type,media_details`))
+	);
+	return new Map(pages.flat().map((m) => [m.id, m]));
 }
 
 export async function getProjects(fetch: Fetch): Promise<Project[]> {
@@ -182,7 +216,8 @@ export async function getProjects(fetch: Fetch): Promise<Project[]> {
 		get<WPPost[]>(fetch, '/posts?per_page=100&_embed=wp:featuredmedia')
 	]);
 	const bySlug = new Map(posts.map((p) => [p.slug, p]));
-	return cards.map((card) => toProject(card, bySlug.get(postSlug(card.meta?.link_interno ?? '') ?? '')));
+	const media = await getMedia(fetch, posts.flatMap(galleryIds));
+	return cards.map((card) => toProject(card, bySlug.get(postSlug(card.meta?.link_interno ?? '') ?? ''), media));
 }
 
 const CATEGORY_ORDER = ['visual', 'video', 'curation', 'web', 'writing'];
@@ -193,10 +228,18 @@ export function categoriesOf(projects: Project[]): Category[] {
 	return slugs.map((slug, id) => ({ id, slug, name: slug }));
 }
 
+const cleanPage = (html: string) =>
+	unstyled(html)
+		.replace(/<h\d\b[^>]*premium-atext__headline[\s\S]*?<\/h\d>/gi, '')
+		.replace(/&nbsp;| /g, ' ')
+		.replace(/\s*<br\s*\/?>\s*/gi, '<br>')
+		.replace(/(<(?:p|span|i|em)\b[^>]*>)\s+/gi, '$1')
+		.replace(/\s+(<\/(?:p|span|i|em)>)/gi, '$1');
+
 export async function getPage(fetch: Fetch, slug: string): Promise<Page> {
 	const [page] = await get<WPPage[]>(fetch, `/pages?slug=${slug}`);
 	if (!page) error(404, 'Page not found');
-	return { slug: page.slug, title: page.title.rendered, content: unstyled(page.content.rendered) };
+	return { slug: page.slug, title: page.title.rendered, content: cleanPage(page.content.rendered) };
 }
 
 export const projectHref = (p: Project) => resolve(`/projects/${p.slug}`);

@@ -11,7 +11,7 @@
 	{#key page.slug}
 		<section class="sheet h-full overflow-y-auto overscroll-contain border-x-(length:--stroke) border-black bg-sun max-sm:border-x-0" in:fade={{ duration: 300 }}>
 			<div class="flex flex-col gap-[0.75em] p-(--pad) pb-8">
-				<h1 class="title">{@html page.title}</h1>
+				<!-- <h1 class="title">{@html page.title}</h1> -->
 				<div class="content">{@html page.content}</div>
 			</div>
 		</section>

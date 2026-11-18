@@ -10,14 +10,6 @@
   const links = $derived(
     project.links.filter((l) => l.href !== project.externalUrl),
   );
-  const month = $derived(
-    project.date
-      ? new Date(project.date).toLocaleDateString("en-GB", {
-          month: "long",
-          year: "numeric",
-        })
-      : null,
-  );
 
   let article: HTMLElement;
   const clamp = (v: number, min: number, max: number) =>
@@ -80,16 +72,16 @@
           ></iframe>
         {:else}
           <div class="flex flex-col gap-(--pad) p-(--pad)">
-            {#if project.video}
+            {#each project.videos as video (video)}
               <iframe
-                src={project.video}
+                src={video}
                 title={project.title}
                 class="aspect-video w-full border-0 bg-black"
                 allow="fullscreen; picture-in-picture; encrypted-media"
                 allowfullscreen
                 loading="lazy"
               ></iframe>
-            {/if}
+            {/each}
             {#each project.images as image (image.src)}
               <img
                 src={image.src}
@@ -108,9 +100,9 @@
         aria-label="information"
       >
         <div class="flex flex-col gap-[0.75em] p-(--pad) pb-8">
-          <!-- {#if month}
-            <p class="font-sans text-[0.75em]">{month}</p>
-          {/if} -->
+          {#if project.date}
+            <p class="font-sans text-[0.75em]">{project.date}</p>
+          {/if}
           <h1 class="title">{@html project.title}</h1>
           {#if project.categories.length}
             <ul class="flex flex-wrap gap-[0.4em]">
