@@ -1,0 +1,1 @@
+var e=`https://mete.fyi/wp-json/wp/v2`,t=`/logo.gif`,n=[{bg:`white`,fg:`black`,outline:!1}];export{n,e as r,t};
