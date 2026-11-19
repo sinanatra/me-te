@@ -31,11 +31,11 @@
   {@render children()}
 </main>
 
-<footer class="text-sm">
+<footer>
   <nav aria-label="Main">
     <a
       href={resolve("/about")}
-      class="fixed bottom-(--pad) left-(--pad) z-2000 flex h-(--bar) items-center text-base leading-none"
+      class="fixed bottom-(--pad) left-(--pad) z-2000 flex h-(--bar) items-center leading-none"
       >About</a
     >
   </nav>

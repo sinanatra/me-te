@@ -53,7 +53,7 @@
 >
   <a
     href={closeHref}
-    class="absolute top-[calc(var(--stroke)+var(--pad))] right-[calc(var(--stroke)+var(--pad))] z-10 text-2xl leading-none max-sm:top-auto max-sm:bottom-(--pad) max-sm:right-auto max-sm:left-1/2 max-sm:flex max-sm:h-(--bar) max-sm:-translate-x-1/2 max-sm:items-center"
+    class="absolute top-[calc(var(--stroke)+var(--pad))] right-[calc(var(--stroke)+var(--pad))] z-10 leading-none max-sm:top-auto max-sm:bottom-(--pad) max-sm:right-auto max-sm:left-1/2 max-sm:flex max-sm:h-(--bar) max-sm:-translate-x-1/2 max-sm:items-center"
     aria-label="Close">×</a
   >
 
@@ -99,13 +99,15 @@
         class="panel sheet overflow-y-auto overscroll-contain bg-white"
         aria-label="information"
       >
-        <div class="flex flex-col gap-[0.75em] p-(--pad) pb-8">
-          {#if project.date}
-            <p class="font-sans text-[0.75em]">{project.date}</p>
-          {/if}
-          <h1 class="title">{@html project.title}</h1>
+        <div class="flex flex-col gap-(--pad) p-(--pad)">
+          <div>
+            {#if project.date}
+              <p class="font-sans">{project.date}</p>
+            {/if}
+            <h1 class="title">{@html project.title}</h1>
+          </div>
           {#if project.categories.length}
-            <ul class="flex flex-wrap gap-[0.4em]">
+            <ul class="flex flex-wrap gap-(--pad)">
               {#each project.categories as category (category)}
                 <li>
                   <a

@@ -314,7 +314,7 @@
               decoding="async"
             />
           {:else}
-            <span class="grid h-full place-items-center text-lg"
+            <span class="grid h-full place-items-center"
               >{@html project.title}</span
             >
           {/if}
@@ -341,7 +341,7 @@
           role="presentation"
           onclick={(e) => open(e, i)}
         >
-          <div class="flex min-h-0 flex-col gap-[0.75em]">
+          <div class="flex min-h-0 flex-col gap-(--pad)">
             <h2
               class="title line-clamp-3 shrink-0"
               class:outline={PALETTE[i % PALETTE.length].outline}
@@ -349,7 +349,7 @@
               {@html project.title}
             </h2>
             {#if project.categories.length}
-              <ul class="flex flex-wrap gap-[0.4em] max-sm:hidden">
+              <ul class="flex flex-wrap gap-(--pad) max-sm:hidden">
                 {#each project.categories as category (category)}
                   <li class="pill">{category}</li>
                 {/each}
@@ -359,7 +359,7 @@
               {description(project)}
             </p>
             {#if project.links.length || project.detail}
-              <div class="flex items-end justify-between gap-[1.2em]">
+              <div class="flex items-end justify-between gap-(--pad)">
                 <ul class="links max-sm:hidden">
                   {#each project.links as link (link.href)}
                     <li>
@@ -376,7 +376,7 @@
                 </ul>
                 {#if project.detail}
                   <span
-                    class="ml-auto shrink-0 font-sans text-[0.75em]"
+                    class="ml-auto shrink-0 font-sans"
                     aria-hidden="true">More info</span
                   >
                 {/if}
